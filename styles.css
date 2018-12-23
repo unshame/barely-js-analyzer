@@ -3,25 +3,32 @@ html {
 }
 
 body {
-    min-height: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: row;
     align-content: center;
+    margin: 0;
+    padding: 0;
 }
 
 .section-input {
+    padding: 10px 0 0 10px;
     width: 40%;
 }
 
 .section-analysis {
+    padding: 10px 10px 10px 0;
     width: 60%;
     text-align: center;
+    max-height: 100vh;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .input-code {
     box-sizing: border-box;
     width: 100%;
-    height: calc(100vh - 65px);
+    height: calc(100vh - 70px);
 }
 
 .input-main {
