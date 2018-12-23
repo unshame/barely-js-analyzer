@@ -23,8 +23,8 @@ const operators = [
 ];
 const joinedEscapedOperators = operators.map(op => escapeRegExp(op)).join('|');
 const regExs = {
-    functionDeclarations: /function\s+([a-zA-Z_0-9][a-zA-Z0-9]*)\s*\(([^)]*)\)\s*{([^}]*)}/g,
-    string: /["'`]([^"'`\n\r]*)[\"\'\`]/g,
+    functionDeclarations: /function\s+([a-zA-Z_0-9][a-zA-Z0-9]*)\s*\(([^)]*)\)\s*{/g,
+    string: /["'`]/g,
     functionCall: /[a-zA-Z_0-9][a-zA-Z0-9]* *\(/g,
     operators: new RegExp(`(${joinedEscapedOperators})`, 'g'),
     operands: /[a-zA-Z_0-9][a-zA-Z0-9]*/g,
@@ -47,16 +47,18 @@ function getFunctionObjects(code) {
             break;
         }
 
-        let [ , name, args, body] = funcMatch.mapTrim();
+        let [ , name, args] = funcMatch.mapTrim();
+        let startIndex = funcMatch.index + funcMatch[0].length;
+        let body = getTextBetween(code, '{', '}', startIndex, 1)[0].trim();
+        let [safeBody, referencedValues] = getSafeCode(body);
         args = args.split(',').mapFilterTrim();
 
-        let lines = body.split(';').mapFilterTrim();
-        let [safeLines, referencedValues] = getSafeLines(lines);
+        let lines = safeBody.split(';').mapFilterTrim();
         let counts = countOps(lines, referencedValues);
 
         let func = {
-            args, name, body, lines,
-            safeLines, referencedValues,
+            args, name, body,
+            safeBody, lines, referencedValues,
             counts
         };
 
@@ -66,18 +68,49 @@ function getFunctionObjects(code) {
     return functions;
 }
 
+function getTextBetween(code, openChar, closeChar, startIndex, depth = 0) {
+    let endIndex = code.length - startIndex;
 
-function getSafeLines(lines) {
-    let referencedValues = [];
-    let safeLines = lines.map(line => line.replace(
-        regExs.string,
-        (match, strValue) => {
-            referencedValues.push(strValue);
-            return `@${referencedValues.length - 1}`;
+    for (let i = startIndex; i < code.length; i++) {
+        let char = code[i];
+
+        if (char == closeChar) {
+            depth--;
+
+            if (depth == 0) {
+                endIndex = i;
+                break;
+            }
         }
-    ));
 
-    return [safeLines, referencedValues];
+        if (char == openChar) {
+            depth++;
+            continue;
+        }
+    }
+
+    return [code.substr(startIndex, endIndex - startIndex), endIndex];
+}
+
+
+function getSafeCode(code) {
+    let referencedValues = [];
+
+    while (true) {
+
+        let match = regExs.string.exec(code);
+        if (!match) {
+            break;
+        }
+
+        let char = match[0][0];
+        let startIndex = match.index + 1;
+        let [value, endIndex] = getTextBetween(code, char, char, startIndex, 1);
+        referencedValues.push(value);
+        code = code.substring(0, startIndex - 1) + `@${ referencedValues.length - 1 }` + code.substring(endIndex + 1);
+    }
+
+    return [code, referencedValues];
 }
 
 function countOps(lines, referencedValues) {
@@ -101,7 +134,13 @@ function countOps(lines, referencedValues) {
 
         for (let operand of (line.match(regExs.referencedOperands) || [])) {
             let i = parseInt(operand.substr(1), 10);
-            updateOpCounter(counts.operands, `'${referencedValues[i]}'`);
+            let value = referencedValues[i].substr(0, 30);
+
+            if (value.length + 2 < referencedValues[i].length) {
+                value += '...';
+            }
+            
+            updateOpCounter(counts.operands, `'${value.replace(/[\n\r]/g, '')}'`);
         }
     }
 
@@ -157,9 +196,9 @@ function renderAnalysis(functions) {
                 </caption>
                 <tbody>
                     <table><tbody><tr>
-                        <td>${ operandHtml}</td>
-                        <td>${ operatorsHtml}</td>
-                        <td>${ statementsHtml}</td>
+                        <td class="optd">${ operandHtml}</td>
+                        <td class="optd">${ operatorsHtml}</td>
+                        <td class="optd">${ statementsHtml}</td>
                     </tr></tbody></table>
                 </tbody>
         </td></tr>`;
@@ -187,7 +226,7 @@ function renderFuncOps(ops, title, i) {
     }
     else {
         for (let [key, value] of entries) {
-            html += `<tr><td>${key}</td><td align="center">${value}</td></tr>`;
+            html += `<tr><td>${escapeHTML(key)}</td><td align="center">${value}</td></tr>`;
             n++;
             N += value;
         }
@@ -198,4 +237,10 @@ function renderFuncOps(ops, title, i) {
     html += `</table>`;
 
     return [html, n, N];
+}
+
+function escapeHTML(unsafeText) {
+    let div = document.createElement('div');
+    div.innerText = unsafeText;
+    return div.innerHTML;
 }

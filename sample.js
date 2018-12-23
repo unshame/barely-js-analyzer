@@ -4,7 +4,7 @@ function getC(x, y, z) {
 
 function printC(x, y, z) {
     const C = getC(x, y, z);
-    console.log('C(%d, %d, %d) = %f', x, y, z, C);
+    console.log('C(%d, %d, %d) = %d', x, y, z, C);
 }
 
 function printRandomC() {

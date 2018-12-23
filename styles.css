@@ -51,3 +51,7 @@ table.ops td {
     border-spacing: 1px;
     background: white;
 }
+
+td.optd {
+    width: 33.33%;
+}
