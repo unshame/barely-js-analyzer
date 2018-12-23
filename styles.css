@@ -21,7 +21,7 @@ body {
 .input-code {
     box-sizing: border-box;
     width: 100%;
-    height: 400px;
+    height: calc(100vh - 65px);
 }
 
 .input-main {
