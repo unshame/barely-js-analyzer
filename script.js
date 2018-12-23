@@ -1,4 +1,4 @@
-import analyzeCode from './analyzer.js';
+import analyzeCode from './lib/analyzer.js';
 
 const inputCode = $('#code');
 const inputMain = $('#main');
@@ -11,7 +11,7 @@ loadSampleCode();
 
 buttonRun.click(() => runCode());
 buttonAnalyze.click(() => renderAnalysis());
-inputCode.on('keyup', () => renderAnalysis())
+inputCode.on('keyup', () => renderAnalysis());
 
 function loadSampleCode() {
     $.ajax('./sample.js', {
@@ -34,7 +34,7 @@ function runCode() {
 
 function renderAnalysis() {
     try {
-        analysis.html( analyzeCode( inputCode.val() ) )
+        analysis.html( analyzeCode( inputCode.val() ) );
     }
     catch (e) {
         analysis.html('Invalid code');
