@@ -96,6 +96,12 @@ function getTextBetween(code, openChar, closeChar, startIndex, depth = 0) {
 function getSafeCode(code) {
     let referencedValues = [];
 
+    let matches = code.match(regExs.string);
+
+    if (matches && (matches.length) % 2 !== 0) {
+        throw new Error('Comment not closed');
+    }
+
     while (true) {
 
         let match = regExs.string.exec(code);
@@ -147,7 +153,7 @@ function countOps(lines, referencedValues) {
     updateOpCounter(counts.operators, '(', -counts.operators['()'] || 0);
     updateOpCounter(counts.operators, ')', -counts.operators['()'] || 0);
 
-    counts.operators[';'] = lines.length;
+    updateOpCounter(counts.operators, ';', lines.length);
 
     return counts;
 }

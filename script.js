@@ -23,7 +23,7 @@ function loadSampleCode() {
 }
 
 function runCode() {
-    const funcText = `(function() { ${inputCode.html()}; ${inputMain.val()}})()`;
+    const funcText = `(function() { ${inputCode.val()}; ${inputMain.val()}})()`;
     try {
         eval(funcText);
     }
@@ -33,5 +33,11 @@ function runCode() {
 }
 
 function renderAnalysis() {
-    analysis.html( analyzeCode( inputCode.val() ) )
+    try {
+        analysis.html( analyzeCode( inputCode.val() ) )
+    }
+    catch (e) {
+        analysis.html('Invalid code');
+        console.error(e);
+    }
 }
