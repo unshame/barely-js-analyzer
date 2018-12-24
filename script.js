@@ -1,4 +1,5 @@
 import analyzeCode from './lib/analyzer.js';
+import renderAnalysis from './lib/renderer.js';
 
 const inputCode = $('#code');
 const inputMain = $('#main');
@@ -8,17 +9,16 @@ const analysis = $('#analysis');
 
 loadSampleCode();
 
-
 buttonRun.click(() => runCode());
-buttonAnalyze.click(() => renderAnalysis());
-inputCode.on('keyup', () => renderAnalysis());
+buttonAnalyze.click(() => render());
+inputCode.on('keyup', () => render());
 
 function loadSampleCode() {
     $.ajax('./sample.js', {
         dataType: 'text'
     }).done((data) => {
         inputCode.html(data);
-        renderAnalysis();
+        render();
     });
 }
 
@@ -32,9 +32,13 @@ function runCode() {
     }
 }
 
-function renderAnalysis() {
+function render() {
     try {
-        analysis.html( analyzeCode( inputCode.val() ) );
+        let [functions, referencedValues, totalCounts] = analyzeCode(inputCode.val());
+        console.log(functions);
+        console.log(referencedValues);
+        console.log(totalCounts);
+        analysis.html(renderAnalysis(functions, totalCounts));
     }
     catch (e) {
         analysis.html('Invalid code');
