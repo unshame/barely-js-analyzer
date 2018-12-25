@@ -67,7 +67,7 @@ function render() {
                 .sort((a, b) => sign * (parseInt($(a).find('td:last').text()) - parseInt($(b).find('td:last').text())))
                 .reduce((html, tr) => html + tr.outerHTML, '');
         });
-        $('thead>tr>th:first-child', analysis).click()
+        $('thead>tr>th:last-child', analysis).click()
     }
     catch (e) {
         analysis.html('Invalid code');
