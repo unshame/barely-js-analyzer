@@ -59,7 +59,7 @@ function render() {
         $('thead>tr>th:last-child', analysis).click((event) => {
             let target = $(event.currentTarget);
             let tbody = target.closest('table').find('tbody');
-            let sign = parseInt(target.data('order')) || 1;
+            let sign = parseInt(target.data('order')) || -1;
             target.data('order', -sign);
             tbody[0].innerHTML = tbody
                 .find('tr')
