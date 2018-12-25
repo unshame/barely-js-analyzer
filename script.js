@@ -39,6 +39,34 @@ function render() {
         console.log(referencedValues);
         console.log(totalCounts);
         analysis.html(renderAnalysis(functions, totalCounts));
+        
+        // shitcode
+        $('thead>tr>th:first-child', analysis).click((event) => {
+            let target = $(event.currentTarget);
+            let tbody = target.closest('table').find('tbody');
+            let sign = parseInt(target.data('order')) || 1;
+            target.data('order', -sign);
+            tbody[0].innerHTML = tbody
+                .find('tr')
+                .toArray()
+                .sort((a, b) => {
+                    a = $(a).find('td:first').text();
+                    b = $(b).find('td:first').text();
+                    return a == b ? 0 : sign > 0 ? (a > b ? 1 : -1) : (a < b ? 1 : -1);
+                })
+                .reduce((html, tr) => html + tr.outerHTML, '');
+        });
+        $('thead>tr>th:last-child', analysis).click((event) => {
+            let target = $(event.currentTarget);
+            let tbody = target.closest('table').find('tbody');
+            let sign = parseInt(target.data('order')) || 1;
+            target.data('order', -sign);
+            tbody[0].innerHTML = tbody
+                .find('tr')
+                .toArray()
+                .sort((a, b) => sign * (parseInt($(a).find('td:last').text()) - parseInt($(b).find('td:last').text())))
+                .reduce((html, tr) => html + tr.outerHTML, '');
+        });
     }
     catch (e) {
         analysis.html('Invalid code');
